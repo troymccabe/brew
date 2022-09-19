@@ -1038,6 +1038,30 @@ describe Cask::Audit, :cask do
       it { is_expected.to pass }
     end
 
+    context "when the homepage contains a strategy" do
+      let(:cask_token) { "foo" }
+      let(:cask) do
+        tmp_cask cask_token.to_s, <<~RUBY
+          cask '#{cask_token}' do
+            version '1.0'
+            sha256 '8dd95daa037ac02455435446ec7bc737b34567afe9156af7d20b2a83805c1d8a'
+            url 'https://foo.brew.sh/foo.zip'
+            name 'Audit'
+            desc 'Audit Description'
+            homepage 'https://foo.brew.sh', using: :fossil
+            app 'Audit.app'
+          end
+        RUBY
+      end
+
+      it { is_expected.to pass }
+
+      it "uses correct stategy" do
+        download_strat = DownloadStrategyDetector.detect(cask.homepage&.uri&.to_s, cask.homepage&.using)
+        expect(download_strat).to eq FossilDownloadStrategy
+      end
+    end
+
     context "when the url does not match the homepage" do
       let(:cask_token) { "foo" }
       let(:cask) do

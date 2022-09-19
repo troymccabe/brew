@@ -461,7 +461,12 @@ module Homebrew
       when :head, :stable
         formula_or_cask.send(livecheck_url)&.url if formula_or_cask.is_a?(Formula)
       when :homepage
-        formula_or_cask.homepage
+        case formula_or_cask
+        when Formula
+          formula_or_cask.homepage&.url&.to_s
+        when Cask::Cask
+          formula_or_cask.homepage&.uri&.to_s
+        end
       end
     end
 
@@ -477,11 +482,11 @@ module Homebrew
           urls.concat(formula_or_cask.stable.mirrors)
         end
         urls << formula_or_cask.head.url if formula_or_cask.head
-        urls << formula_or_cask.homepage if formula_or_cask.homepage
+        urls << formula_or_cask.homepage&.url&.to_s if formula_or_cask.homepage
       when Cask::Cask
         urls << formula_or_cask.appcast.to_s if formula_or_cask.appcast
         urls << formula_or_cask.url.to_s if formula_or_cask.url
-        urls << formula_or_cask.homepage if formula_or_cask.homepage
+        urls << formula_or_cask.homepage&.uri&.to_s if formula_or_cask.homepage
       else
         T.absurd(formula_or_cask)
       end

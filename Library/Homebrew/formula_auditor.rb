@@ -475,12 +475,13 @@ module Homebrew
 
     def audit_homepage
       homepage = formula.homepage
+      homepage_url = homepage&.url
 
-      return if homepage.blank?
+      return if homepage_url.blank?
 
       return unless @online
 
-      return if formula.tap&.audit_exception :cert_error_allowlist, formula.name, homepage
+      return if formula.tap&.audit_exception :cert_error_allowlist, formula.name, homepage_url
 
       return unless DevelopmentTools.curl_handles_most_https_certificates?
 
@@ -490,13 +491,16 @@ module Homebrew
         spec.using == :homebrew_curl
       end
 
-      if (http_content_problem = curl_check_http_content(homepage,
-                                                         "homepage URL",
-                                                         user_agents:       [:browser, :default],
-                                                         check_content:     true,
-                                                         strict:            @strict,
-                                                         use_homebrew_curl: use_homebrew_curl))
+      if homepage&.using
+        problem "oh holy shit" if homepage.downloader.exists != true
+      elsif (http_content_problem = curl_check_http_content(homepage_url,
+                                                            "homepage URL",
+                                                            user_agents:       [:browser, :default],
+                                                            check_content:     true,
+                                                            strict:            @strict,
+                                                            use_homebrew_curl: use_homebrew_curl))
         problem http_content_problem
+
       end
     end
 
@@ -570,7 +574,7 @@ module Homebrew
       return unless @online
 
       _, user, repo = *regex.match(formula.stable.url) if formula.stable
-      _, user, repo = *regex.match(formula.homepage) unless user
+      _, user, repo = *regex.match(formula.homepage&.url) unless user
       _, user, repo = *regex.match(formula.head.url) if !user && formula.head
       return if !user || !repo
 

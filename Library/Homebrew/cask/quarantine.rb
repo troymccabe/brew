@@ -125,7 +125,7 @@ module Cask
                                      QUARANTINE_SCRIPT,
                                      download_path,
                                      cask.url.to_s,
-                                     cask.homepage.to_s,
+                                     cask.homepage&.uri,
                                    ],
                                    print_stderr: false)
 

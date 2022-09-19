@@ -64,6 +64,11 @@ class AbstractDownloadStrategy
     extend Pourable if meta[:bottle]
   end
 
+  # Checks if the resource exists
+  #
+  # @api public
+  def exists(timeout: nil); end
+
   # Download and cache the resource at {#cached_location}.
   #
   # @api public
@@ -173,6 +178,13 @@ class AbstractDownloadStrategy
 
   def env
     {}
+  end
+end
+
+# Fake download
+class FakeDownloadStrategy < AbstractDownloadStrategy
+  def exists(timeout: nil)
+    true
   end
 end
 
@@ -1428,6 +1440,7 @@ class DownloadStrategyDetector
     when :cvs                    then CVSDownloadStrategy
     when :post                   then CurlPostDownloadStrategy
     when :fossil                 then FossilDownloadStrategy
+    when :test                   then FakeDownloadStrategy
     else
       raise TypeError, "Unknown download strategy #{symbol} was requested."
     end

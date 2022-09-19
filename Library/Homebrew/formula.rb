@@ -95,6 +95,12 @@ class Formula
   # e.g. `/usr/local/Library/Taps/homebrew/homebrew-core/Formula/this-formula.rb`
   attr_reader :path
 
+  # The homepage of this {Formula}.
+  # If the homepage is private, you may pass a {AbstractDownloadStrategy} to attempt
+  # check this homepage during an audit
+  # e.g. https://github.com/acct/repo
+  attr_reader :homepage
+
   # The {Tap} instance associated with this {Formula}.
   # If it's `nil`, then this formula is loaded from a path or URL.
   # @private
@@ -2091,7 +2097,7 @@ class Formula
       "versioned_formulae"       => versioned_formulae.map(&:name),
       "desc"                     => desc,
       "license"                  => SPDX.license_expression_to_string(license),
-      "homepage"                 => homepage,
+      "homepage"                 => homepage&.url&.to_s,
       "versions"                 => {
         "stable" => stable&.version&.to_s,
         "head"   => head&.version&.to_s,
@@ -2713,6 +2719,7 @@ class Formula
       super
       child.instance_eval do
         # Ensure this is synced with `freeze`
+        @homepage = Resource.new
         @stable = SoftwareSpec.new(flags: build_flags)
         @head = HeadSoftwareSpec.new(flags: build_flags)
         @livecheck = Livecheck.new(self)
@@ -2799,8 +2806,19 @@ class Formula
     # e.g. submitting patches.
     # Can be opened with running `brew home`.
     #
+    # If attempting to audit a formula with a private homepage, you may
+    # pass a strategy (e.g. `using: MyDownloadStrategy`) to properly resolve the homepage
+    #
     # <pre>homepage "https://www.example.com"</pre>
-    attr_rw :homepage
+    # <pre>homepage "https://www.example.com", using: MyPrivateHomepageResolveStrat</pre>
+    def homepage(val = nil, specs = {})
+      if val.nil?
+        @homepage
+      else
+        @homepage = Resource.new(name)
+        @homepage.url(val, specs)
+      end
+    end
 
     # Whether a livecheck specification is defined or not.
     # It returns true when a livecheck block is present in the {Formula} and

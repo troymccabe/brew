@@ -40,7 +40,12 @@ module Homebrew
     formulae_or_casks = T.cast(args.named.to_formulae_and_casks, T::Array[T.any(Formula, Cask::Cask)])
     homepages = formulae_or_casks.map do |formula_or_cask|
       puts "Opening homepage for #{name_of(formula_or_cask)}"
-      formula_or_cask.homepage
+      case formula_or_cask
+      when Formula
+        formula_or_cask.homepage&.url
+      when Cask::Cask
+        formula_or_cask.homepage&.uri
+      end
     end
 
     exec_browser(*T.unsafe(homepages))

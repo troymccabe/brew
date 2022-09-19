@@ -25,9 +25,6 @@ class Formula
   def self.desc(arg = T.unsafe(nil)); end
 
   sig { params(arg: T.untyped).returns(T.untyped) }
-  def self.homepage(arg = T.unsafe(nil)); end
-
-  sig { params(arg: T.untyped).returns(T.untyped) }
   def self.revision(arg = T.unsafe(nil)); end
 
   sig { params(arg: T.untyped).returns(T.untyped) }

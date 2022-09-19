@@ -375,7 +375,7 @@ module Cask
     end
 
     def homepage
-      URI(cask.homepage.to_s).host
+      URI(cask.homepage&.uri&.to_s).host
     end
 
     def domain
@@ -768,7 +768,7 @@ module Cask
       return unless online?
 
       _, user, repo = *regex.match(cask.url.to_s)
-      _, user, repo = *regex.match(cask.homepage) unless user
+      _, user, repo = *regex.match(cask.homepage&.uri&.to_s) unless user
       _, user, repo = *regex.match(cask.appcast.to_s) unless user
       return if !user || !repo
 
@@ -806,12 +806,17 @@ module Cask
         check_url_for_https_availability(cask.appcast, "appcast URL", cask.token, cask.tap, check_content: true)
       end
 
-      return unless cask.homepage
+      return unless cask.homepage&.uri
 
-      check_url_for_https_availability(cask.homepage, "homepage URL", cask.token, cask.tap,
-                                       user_agents:   [:browser, :default],
-                                       check_content: true,
-                                       strict:        strict?)
+      if cask.homepage&.using
+        download_strategy = DownloadStrategyDetector.detect(homepage&.uri&.to_s, homepage&.using)
+        problem "oh holy shit" if download_strategy.exists != true
+      else
+        check_url_for_https_availability(cask.homepage&.uri, "homepage URL", cask.token, cask.tap,
+                                         user_agents:   [:browser, :default],
+                                         check_content: true,
+                                         strict:        strict?)
+      end
     end
 
     def check_url_for_https_availability(url_to_check, url_type, cask_token, tap, **options)

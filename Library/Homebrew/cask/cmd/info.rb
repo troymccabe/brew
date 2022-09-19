@@ -59,7 +59,7 @@ module Cask
         require "cask/installer"
 
         output = +"#{title_info(cask)}\n"
-        output << "#{Formatter.url(cask.homepage)}\n" if cask.homepage
+        output << "#{Formatter.url(cask.homepage&.uri)}\n" if cask.homepage
         output << installation_info(cask)
         repo = repo_info(cask)
         output << "#{repo}\n" if repo

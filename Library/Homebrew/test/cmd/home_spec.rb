@@ -5,7 +5,7 @@ require "cmd/shared_examples/args_parse"
 
 describe "brew home" do
   let(:testballhome_homepage) {
-    Formula["testballhome"].homepage
+    Formula["testballhome"].homepage&.url
   }
 
   let(:local_caffeine_path) {
@@ -13,7 +13,7 @@ describe "brew home" do
   }
 
   let(:local_caffeine_homepage) {
-    Cask::CaskLoader.load(local_caffeine_path).homepage
+    Cask::CaskLoader.load(local_caffeine_path).homepage&.uri
   }
 
   it_behaves_like "parseable arguments"

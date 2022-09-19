@@ -138,8 +138,16 @@ module Cask
     end
 
     # @api public
-    def homepage(homepage = nil)
-      set_unique_stanza(:homepage, homepage.nil?) { homepage }
+    def homepage(*args, **options, &block)
+      caller_location = caller_locations[0]
+
+      set_unique_stanza(:homepage, args.empty? && options.empty? && !block) do
+        if block
+          URL.new(*args, **options, caller_location: caller_location, dsl: self, &block)
+        else
+          URL.new(*args, **options, caller_location: caller_location)
+        end
+      end
     end
 
     def language(*args, default: false, &block)

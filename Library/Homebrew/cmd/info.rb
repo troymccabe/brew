@@ -287,7 +287,7 @@ module Homebrew
 
     puts "#{oh1_title(f.full_name)}: #{specs * ", "}#{" [#{attrs * ", "}]" unless attrs.empty?}"
     puts f.desc if f.desc
-    puts Formatter.url(f.homepage) if f.homepage
+    puts Formatter.url(f.homepage&.uri) if f.homepage
 
     deprecate_disable_type, deprecate_disable_reason = DeprecateDisable.deprecate_disable_info f
     if deprecate_disable_type.present?

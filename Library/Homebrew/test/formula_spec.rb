@@ -644,7 +644,7 @@ describe Formula do
       head "https://brew.sh/test.git", tag: "foo"
     end
 
-    expect(f.homepage).to eq("https://brew.sh")
+    expect(f.homepage&.url&.to_s).to eq("https://brew.sh")
     expect(f.version).to eq(Version.create("0.1"))
     expect(f).to be_stable
     expect(f.stable.version).to eq(Version.create("0.1"))

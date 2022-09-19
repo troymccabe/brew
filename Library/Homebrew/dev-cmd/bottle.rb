@@ -550,7 +550,7 @@ module Homebrew
             invalid: :replace, undef: :replace, replace: "",
           ).strip,
           "license"          => SPDX.license_expression_to_string(f.license),
-          "homepage"         => f.homepage,
+          "homepage"         => f.homepage&.url,
         },
         "bottle"  => {
           "root_url" => bottle.root_url,
