@@ -290,7 +290,15 @@ module Utils
           url_protected_by_cloudflare?(response) || url_protected_by_incapsula?(response)
         end
 
-        return "The #{url_type} #{url} is not reachable (HTTP status code #{details[:status_code]})"
+        check_github_api = url_type == "homepage URL" &&
+                           details[:status_code] == "404" &&
+                           url.match(%r{^https://github\.com}i)
+        unless check_github_api
+          return "The #{url_type} #{url} is not reachable (HTTP status code #{details[:status_code]})"
+        end
+
+        repo_details = %r{https?://github\.com/(?<user>[^/]+)/(?<repo>[^/]+)/?.*}.match(url)
+        "Unable to find homepage" if SharedAudits.github_repo_data(repo_details[:user], repo_details[:repo]).nil?
       end
 
       if url.start_with?("https://") && Homebrew::EnvConfig.no_insecure_redirect? &&
