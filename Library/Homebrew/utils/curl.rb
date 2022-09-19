@@ -240,6 +240,12 @@ module Utils
                                 check_content: false, strict: false, use_homebrew_curl: false)
       return unless url.start_with? "http"
 
+      github_details = %r{https?://github\.com/(?<user>[^/]+)/(?<repo>[^/]+)/?.*[?|&]private}.match(url)
+      if url_type == "homepage URL" && github_details && github_details[:user] && github_details[:repo]
+        api_response = SharedAudits.github_repo_data(github_details[:user], github_details[:repo])
+        return api_response ? nil : "The #{url_type} #{url} is not reachable (HTTP status code 404)"
+      end
+
       secure_url = url.sub(/\Ahttp:/, "https:")
       secure_details = nil
       hash_needed = false
@@ -290,15 +296,7 @@ module Utils
           url_protected_by_cloudflare?(response) || url_protected_by_incapsula?(response)
         end
 
-        check_github_api = url_type == "homepage URL" &&
-                           details[:status_code] == "404" &&
-                           url.match(%r{^https://github\.com}i)
-        unless check_github_api
-          return "The #{url_type} #{url} is not reachable (HTTP status code #{details[:status_code]})"
-        end
-
-        repo_details = %r{https?://github\.com/(?<user>[^/]+)/(?<repo>[^/]+)/?.*}.match(url)
-        "Unable to find homepage" if SharedAudits.github_repo_data(repo_details[:user], repo_details[:repo]).nil?
+        return "The #{url_type} #{url} is not reachable (HTTP status code #{details[:status_code]})"
       end
 
       if url.start_with?("https://") && Homebrew::EnvConfig.no_insecure_redirect? &&
